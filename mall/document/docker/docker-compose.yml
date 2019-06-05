@@ -1,0 +1,62 @@
+version: '3'
+services:
+  mysql:
+    image: mysql:5.7
+    restart: always
+    environment:
+     - MYSQL_ROOT_PASSWORD=root
+     - MYSQL_ROOT_PASSWORD=123456
+     - MYSQL_DATABASE=mall
+     - MYSQL_USER=admin
+     - MYSQL_PASSWORD=admin
+    ports:
+     - "8038:3306"
+    volumes:
+     - $PWD/mysql/data:/var/lib/mysql
+     - $PWD/mysql/conf/my.cnf:/etc/my.cnf
+     - $PWD/mysql/init:/docker-entrypoint-initdb.d/
+    command: --max_allowed_packet=32505856
+  elasticsearch:
+    image: elasticsearch:2.4
+    ports:
+      - 9200:9200
+      - 9300:9300
+    volumes:
+      - $PWD/elasticsearch/plugins:/usr/share/elasticsearch/plugins
+      - $PWD/elasticsearch/data:/usr/share/elasticsearch/data
+  redis:
+    image: redis:3.2
+    ports:
+      - 6379:6379
+    volumes:
+      - $PWD/redis/data:/data
+    command: redis-server --appendonly yes
+  mongo:
+    image: mongo:3.2
+    ports:
+      - 27017:27017
+    volumes:
+      - $PWD/mongo/db:/data/db
+  nginx:
+    image: nginx:1.10
+    ports:
+      - 8090:80
+    volumes:
+      - $PWD/nginx/html:/usr/share/nginx/html
+      - $PWD/nginx/logs:/var/log/nginx
+      - $PWD/nginx/conf:/etc/nginx
+  rabbitmq:
+    image: rabbitmq:management-alpine
+    container_name: rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=mall
+      - RABBITMQ_DEFAULT_PASS=mall
+    restart: always
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
